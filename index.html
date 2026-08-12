@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>하루 20뽀모 — 전환기 루틴</title>
+<meta name="description" content="전환기 루틴 트래커 — 하루 20뽀모.">
+<meta name="theme-color" content="#E9ECE8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="20뽀모">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+<style>
+  :root{
+    --bg:#E9ECE8; --surface:#F5F7F3; --surface-2:#DFE4DC;
+    --fg:#171C19; --fg-2:#4A544D; --fg-3:#7A857C;
+    --line:#C9D1C7;
+    --accent:#1F6B57; --accent-soft:#CBE0D6;
+    --flex:#9A6B1F; --flex-soft:#EBDCBF;
+    --warn:#A33F3A; --warn-soft:#EFD3D0;
+    --on-accent:#F5F7F3;
+    --shadow:0 1px 2px rgba(23,28,25,.06), 0 8px 24px -12px rgba(23,28,25,.18);
+    --r:14px;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",
+           "Noto Sans KR",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#121614; --surface:#1A201D; --surface-2:#242C28;
+      --fg:#E7EDE8; --fg-2:#A8B3AC; --fg-3:#78837C;
+      --line:#2C3531;
+      --accent:#5FBFA1; --accent-soft:#1E3830;
+      --flex:#D9A94E; --flex-soft:#3A2F19;
+      --warn:#E0716B; --warn-soft:#3B211F;
+      --on-accent:#0E1412;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#121614; --surface:#1A201D; --surface-2:#242C28;
+    --fg:#E7EDE8; --fg-2:#A8B3AC; --fg-3:#78837C;
+    --line:#2C3531;
+    --accent:#5FBFA1; --accent-soft:#1E3830;
+    --flex:#D9A94E; --flex-soft:#3A2F19;
+    --warn:#E0716B; --warn-soft:#3B211F;
+    --on-accent:#0E1412;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+  :root[data-theme="light"]{
+    --bg:#E9ECE8; --surface:#F5F7F3; --surface-2:#DFE4DC;
+    --fg:#171C19; --fg-2:#4A544D; --fg-3:#7A857C;
+    --line:#C9D1C7;
+    --accent:#1F6B57; --accent-soft:#CBE0D6;
+    --flex:#9A6B1F; --flex-soft:#EBDCBF;
+    --warn:#A33F3A; --warn-soft:#EFD3D0;
+    --on-accent:#F5F7F3;
+    --shadow:0 1px 2px rgba(23,28,25,.06), 0 8px 24px -12px rgba(23,28,25,.18);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+       -webkit-font-smoothing:antialiased;line-height:1.55}
+  .wrap{max-width:560px;margin:0 auto;padding:18px 16px 96px}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+           color:var(--fg-3);font-weight:600}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+        box-shadow:var(--shadow)}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+         margin-bottom:14px}
+  header h1{margin:2px 0 0;font-size:19px;font-weight:700;letter-spacing:-.01em}
+  #dateline{font-size:12.5px;color:var(--fg-2);margin-top:3px}
+  .gradechip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;
+             border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap;
+             background:var(--surface-2);color:var(--fg-2);border:1px solid var(--line)}
+  .gradechip.g-green{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+  .gradechip.g-amber{background:var(--flex-soft);color:var(--flex);border-color:transparent}
+  .gradechip.g-red{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+
+  .timer{padding:20px 18px 18px;display:grid;gap:14px;justify-items:center;text-align:center}
+  .ring{position:relative;width:212px;height:212px}
+  .ring svg{transform:rotate(-90deg);display:block}
+  .ring .track{fill:none;stroke:var(--surface-2);stroke-width:9}
+  .ring .prog{fill:none;stroke:var(--accent);stroke-width:9;stroke-linecap:round;
+              transition:stroke-dashoffset .35s linear}
+  body.is-break .ring .prog{stroke:var(--flex)}
+  .ring .inner{position:absolute;inset:0;display:grid;place-content:center;gap:2px}
+  #clock{font-family:var(--mono);font-size:52px;font-weight:600;letter-spacing:-.03em;
+         font-variant-numeric:tabular-nums;line-height:1}
+  #phase{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-3);
+         font-weight:700}
+  #nowitem{font-size:15px;font-weight:700;color:var(--fg-2)}
+
+  .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);
+         background:var(--surface-2);color:var(--fg);padding:10px 16px;font-weight:600;
+         font-size:14px;transition:transform .08s ease,filter .15s ease}
+  button:hover{filter:brightness(1.05)}
+  button:active{transform:translateY(1px)}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  button.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
+  button.ghost{background:transparent}
+  button.sm{padding:5px 11px;font-size:12.5px;border-radius:8px}
+  button[disabled]{opacity:.4;cursor:not-allowed}
+
+  section{margin-top:18px}
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 8px;gap:10px}
+  .sechead .right{font-size:12.5px;color:var(--fg-3);font-family:var(--mono);
+                  font-variant-numeric:tabular-nums}
+
+  .row{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:11px;
+       padding:11px 13px;border-bottom:1px solid var(--line);cursor:pointer;
+       background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;
+       border-radius:0;font-weight:400}
+  .row:first-of-type{border-top-left-radius:var(--r);border-top-right-radius:var(--r)}
+  .row:last-of-type{border-bottom:0;border-bottom-left-radius:var(--r);
+                    border-bottom-right-radius:var(--r)}
+  .row:hover{background:var(--surface-2)}
+  .row.sel{background:var(--accent-soft)}
+  .row .ico{font-size:19px;line-height:1}
+  .row .nm{font-size:14.5px;font-weight:600;letter-spacing:-.005em}
+  .row .sub{font-size:11.5px;color:var(--fg-3);font-family:var(--mono);margin-top:1px}
+  .pips{display:flex;gap:4px}
+  .pip{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--line);background:transparent}
+  .pip.on{background:var(--accent);border-color:var(--accent)}
+  .pip.flex{border-color:var(--flex)}
+  .pip.flex.on{background:var(--flex);border-color:var(--flex)}
+  .pip.extra{border-style:dashed;border-color:var(--flex)}
+  .pip.extra.on{background:var(--flex);border-color:var(--flex);border-style:solid}
+
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .tier{padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--line);
+        text-align:center}
+  .tier.hit{border-color:var(--accent);background:var(--accent-soft)}
+  .tier .t{font-size:11px;color:var(--fg-3);font-weight:700}
+  .tier .v{font-family:var(--mono);font-size:17px;font-weight:700;margin-top:2px}
+
+  .prog-row{display:grid;gap:7px;padding:13px;border-bottom:1px solid var(--line)}
+  .prog-row:last-child{border-bottom:0}
+  .prog-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .prog-top .l{font-size:14px;font-weight:700}
+  .prog-top .r{font-family:var(--mono);font-size:13px;color:var(--fg-2);
+               font-variant-numeric:tabular-nums}
+  .bar{height:7px;border-radius:999px;background:var(--surface-2);position:relative}
+  .bar i{display:block;height:100%;background:var(--accent);border-radius:999px;
+         transition:width .3s ease}
+  .bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg-3);border-radius:2px}
+  .note{font-size:12px;color:var(--fg-3)}
+  .note.warn{color:var(--warn);font-weight:600}
+
+  /* 계시록 22장 격자 — 다 외운 장은 사장이 직접 누른다 */
+  .chaps{display:grid;grid-template-columns:repeat(11,1fr);gap:5px}
+  .chap{aspect-ratio:1;border-radius:7px;border:1.5px solid var(--line);background:transparent;
+        font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--fg-3);padding:0;
+        display:grid;place-content:center}
+  .chap.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .chap.due{border-color:var(--fg-3);border-style:dashed}
+
+  .split{display:flex;gap:5px;flex-wrap:wrap}
+  .tag{font-size:11.5px;padding:3px 9px;border-radius:999px;background:var(--surface-2);
+       color:var(--fg-2);font-weight:600;white-space:nowrap}
+  .tag b{font-family:var(--mono);font-weight:700}
+
+  dialog{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);
+         color:var(--fg);padding:0;max-width:440px;width:calc(100% - 28px);box-shadow:var(--shadow)}
+  dialog::backdrop{background:rgba(10,14,12,.55)}
+  .dlg{padding:18px;display:grid;gap:12px;max-height:80vh;overflow-y:auto}
+  .dlg h3{margin:0;font-size:16px}
+  label.f{display:grid;gap:4px}
+  label.f > span{font-size:11.5px;color:var(--fg-3);font-weight:700}
+  textarea,input[type=text],input[type=number],select{width:100%;font:inherit;padding:9px 11px;
+    border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);
+    resize:vertical}
+  textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);
+        background:var(--surface);font-size:12.5px;font-weight:600;color:var(--fg-2)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+  .log{display:grid;gap:0}
+  .logitem{padding:11px 13px;border-bottom:1px solid var(--line);font-size:13px}
+  .logitem:last-child{border-bottom:0}
+  .logitem .meta{font-family:var(--mono);font-size:11px;color:var(--fg-3)}
+  .logitem .body{margin-top:3px}
+  .logitem .quote{margin-top:4px;color:var(--fg-2)}
+  .del{float:right;font-size:11px;color:var(--fg-3);background:none;border:0;padding:2px 6px;
+       cursor:pointer;font-weight:600}
+
+  nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);
+      border-top:1px solid var(--line);display:flex;
+      padding:6px 8px max(6px,env(safe-area-inset-bottom));z-index:5}
+  nav button{flex:1;background:none;border:0;padding:9px 4px;font-size:12px;font-weight:700;
+             color:var(--fg-3);border-radius:10px}
+  nav button.on{color:var(--accent);background:var(--accent-soft)}
+  .page{display:none}
+  .page.on{display:block}
+
+  .plan{font-family:var(--mono);font-size:12.5px;color:var(--fg-2);line-height:1.85;
+        padding:13px;white-space:pre;overflow-x:auto}
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi{padding:12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+  .kpi .t{font-size:11px;color:var(--fg-3);font-weight:700}
+  .kpi .v{font-family:var(--mono);font-size:21px;font-weight:700;margin-top:2px;
+          font-variant-numeric:tabular-nums}
+  .kpi .s{font-size:11.5px;color:var(--fg-3);margin-top:1px}
+  .foot{margin-top:20px;font-size:11.5px;color:var(--fg-3);text-align:center;line-height:1.7}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">전환기 루틴</div>
+      <h1>하루 20뽀모</h1>
+      <div id="dateline"></div>
+    </div>
+    <div style="display:grid;gap:6px;justify-items:end">
+      <span class="gradechip" id="grade">— 0/20</span>
+      <div style="display:flex;gap:6px">
+        <button class="ghost sm" id="setbtn">설정</button>
+        <button class="ghost sm" id="themebtn">테마</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ 오늘 ══ -->
+  <div class="page on" id="p-today">
+    <div class="card timer">
+      <div class="ring">
+        <svg width="212" height="212" viewBox="0 0 212 212" aria-hidden="true">
+          <circle class="track" cx="106" cy="106" r="94"></circle>
+          <circle class="prog" id="progc" cx="106" cy="106" r="94"></circle>
+        </svg>
+        <div class="inner">
+          <div id="phase">준비</div>
+          <div id="clock" class="num">25:00</div>
+          <div id="nowitem">항목을 고르세요</div>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="primary" id="startbtn">시작</button>
+        <button id="skipbtn">건너뛰기</button>
+        <button class="ghost" id="resetbtn">되돌리기</button>
+      </div>
+      <div class="note" id="hint"></div>
+    </div>
+
+    <section>
+      <div class="sechead">
+        <span class="eyebrow">코어 15뽀모</span>
+        <span class="right" id="corecount">0 / 15</span>
+      </div>
+      <div class="card" id="items"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <span class="eyebrow">재량 5뽀모</span>
+        <span class="right" id="flexcount">0 / 5</span>
+      </div>
+      <div class="card" style="padding:13px;display:grid;gap:9px">
+        <div class="note">코어를 넘긴 뽀모가 여기로 쌓입니다.</div>
+        <div class="pips" id="flexpips" style="gap:6px"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead"><span class="eyebrow">오늘 등급</span></div>
+      <div class="tiers">
+        <div class="tier" id="t-green"><div class="t">🟢 온전한 날</div><div class="v num">20</div></div>
+        <div class="tier" id="t-amber"><div class="t">🟡 외출한 날</div><div class="v num">7</div></div>
+        <div class="tier" id="t-red"><div class="t">🔴 무너진 날</div><div class="v num">3</div></div>
+      </div>
+      <div class="note" style="margin-top:8px">0인 날을 안 만드는 게 목적입니다.</div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <span class="eyebrow">오늘 기록</span>
+        <span class="right"><button class="sm" id="addmemo">+ 직접 쓰기</button></span>
+      </div>
+      <div class="chips" id="memofilter" style="margin-bottom:8px"></div>
+      <div class="card log" id="memolog"></div>
+    </section>
+
+    <section>
+      <div class="sechead"><span class="eyebrow">기본 배치 · 외출 없는 날</span></div>
+      <div class="card plan" id="plan"></div>
+      <div class="note" style="margin-top:8px" id="plannote"></div>
+    </section>
+  </div>
+
+  <!-- ══ 진도 ══ -->
+  <div class="page" id="p-prog">
+    <section style="margin-top:0">
+      <div class="sechead">
+        <span class="eyebrow">📖 계시록 22장</span>
+        <span class="right" id="rev-r">0 / 22장</span>
+      </div>
+      <div class="card" style="padding:13px;display:grid;gap:10px">
+        <div class="bar"><i id="rev-bar"></i><b id="rev-mark"></b></div>
+        <div class="note" id="rev-note"></div>
+        <div class="chaps" id="chaps"></div>
+        <div class="note">다 외운 장을 직접 누르세요. 점선은 오늘까지의 목표선입니다.</div>
+        <div class="note" id="rev-detail" style="color:var(--fg-2)"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead"><span class="eyebrow">기록에서 자동으로 세는 것</span></div>
+      <div class="card" id="autostats"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <span class="eyebrow">📚 읽는 책</span>
+        <span class="right" id="bk-r"></span>
+      </div>
+      <div class="card log" id="books"></div>
+      <div class="note" style="margin-top:8px">독서 기록에 책 이름을 적으면 여기 모입니다. 다 읽으면 완독을 누르세요.</div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <span class="eyebrow">이번 주</span>
+        <span class="right" id="weekrange"></span>
+      </div>
+      <div class="card" id="weekcard"></div>
+      <div class="note" id="weekverdict" style="margin-top:8px"></div>
+    </section>
+  </div>
+
+  <!-- ══ 기록 ══ -->
+  <div class="page" id="p-log">
+    <section style="margin-top:0">
+      <div class="sechead">
+        <span class="eyebrow">쌓인 것</span>
+        <span class="right" id="streak"></span>
+      </div>
+      <div class="kpis" id="kpis"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <span class="eyebrow">회고에서 보이는 것</span>
+      </div>
+      <div class="card" style="padding:13px;display:grid;gap:7px" id="insight"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <span class="eyebrow">한 줄 회고</span>
+        <span class="right"><button class="sm primary" id="reviewbtn">오늘 회고 쓰기</button></span>
+      </div>
+      <div class="card log" id="reviews"></div>
+    </section>
+
+    <section>
+      <div class="sechead"><span class="eyebrow">지난 날</span></div>
+      <div class="card log" id="history"></div>
+    </section>
+
+    <section>
+      <div class="sechead"><span class="eyebrow">노션으로 내보내기</span></div>
+      <div class="card" style="padding:13px;display:grid;gap:9px">
+        <div class="note">노션 DB 두 개에 그대로 붙는 CSV입니다. 노션에서 <b>Merge with CSV</b>로 올리면 누적됩니다.</div>
+        <div class="btns" style="justify-content:stretch">
+          <button style="flex:1" id="csv1">⏱ 일일 루틴 기록</button>
+          <button style="flex:1" id="csv2">🪞 하루 회고</button>
+        </div>
+        <button class="ghost" id="exportbtn">전체 백업 (JSON)</button>
+        <div class="note" id="expnote"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="foot">
+    착수 2026-08-26 · 계시록 22장 3개월 목표 11/26<br>
+    코어 15뽀모 + 재량 5뽀모 · 기록은 이 기기에만 저장됩니다
+  </div>
+</div>
+
+<nav>
+  <button class="on" data-page="p-today">오늘</button>
+  <button data-page="p-prog">진도</button>
+  <button data-page="p-log">기록</button>
+</nav>
+
+<dialog id="memodlg"><div class="dlg">
+  <h3 id="memoh">기록</h3>
+  <div id="memofields" style="display:grid;gap:10px"></div>
+  <div class="btns" style="justify-content:flex-end">
+    <button type="button" class="ghost" id="memo-skip">건너뛰기</button>
+    <button type="button" class="primary" id="memo-save">저장</button>
+  </div>
+</div></dialog>
+
+<dialog id="revdlg"><div class="dlg">
+  <h3>오늘 한 줄 회고</h3>
+  <div class="note">하루를 닫는 문장 하나. 이게 쌓여 인사이트가 됩니다.</div>
+  <textarea id="revtxt" rows="4" placeholder="예: 계시록이 잘 붙는 날이었다. 오후엔 집중이 흩어져 개발을 재량으로 미뤘다."></textarea>
+  <div class="btns" style="justify-content:flex-end">
+    <button type="button" class="ghost" id="rev-cancel">닫기</button>
+    <button type="button" class="primary" id="rev-save">저장</button>
+  </div>
+</div></dialog>
+
+<dialog id="setdlg"><div class="dlg">
+  <h3>설정</h3>
+  <div class="grid2">
+    <label class="f"><span>집중 (분)</span><input type="number" id="s-focus" min="5" max="90" step="1"></label>
+    <label class="f"><span>휴식 (분)</span><input type="number" id="s-break" min="1" max="30" step="1"></label>
+  </div>
+  <div class="note">1뽀모 = 집중 + 휴식. 기본은 25 + 5입니다. 바꾸면 아래 배치표의 시각도 같이 움직입니다.</div>
+  <div class="chips" id="presets"></div>
+  <div class="btns" style="justify-content:flex-end">
+    <button type="button" class="ghost" id="set-cancel">닫기</button>
+    <button type="button" class="primary" id="set-save">저장</button>
+  </div>
+</div></dialog>
+
+<script>
+(function(){
+  "use strict";
+
+  var ITEMS = [
+    {k:"운동",  ico:"🏋️", nm:"운동",          sub:"근력 · 스트레칭",   core:2},
+    {k:"훈련",  ico:"🎙",  nm:"복식호흡·훈련", sub:"아나운서 훈련",     core:2},
+    {k:"계시록",ico:"📖",  nm:"계시록",        sub:"암기 · 스피치",     core:3},
+    {k:"청소",  ico:"🧹",  nm:"집청소",        sub:"매일 조금씩",       core:1},
+    {k:"중국어",ico:"🇨🇳",  nm:"중국어",        sub:"단어 · 문법 · 회화", core:2},
+    {k:"개발",  ico:"💻",  nm:"개발",          sub:"클로드 코드",       core:3},
+    {k:"독서",  ico:"📚",  nm:"독서",          sub:"",                  core:2}
+  ];
+  // 항목별로 무엇을 남길지 — 노션 「⏱ 일일 루틴 기록」 열과 1:1로 맞췄다
+  var FIELDS = {
+    "운동":  [{k:"구분",t:"sel",o:["근력","스트레칭"]},
+              {k:"대상",t:"txt",lb:"부위·종목",ph:"하체 · 코어 · 전신"},
+              {k:"내용",t:"txt",lb:"한 것",ph:"스쿼트 3세트 · 폼롤러 10분"}],
+    "훈련":  [{k:"구분",t:"sel",o:["복식호흡","발성","발음","낭독","속도·쉼"]},
+              {k:"내용",t:"txt",lb:"중점적으로 한 훈련",ph:"들숨 4초 · 낭독 원고 1편"}],
+    "계시록":[{k:"구분",t:"sel",o:["암기","스피치","복습"]},
+              {k:"장",t:"num",lb:"장"},{k:"시작",t:"num",lb:"시작 절"},{k:"끝",t:"num",lb:"끝 절"},
+              {k:"내용",t:"txt",lb:"메모",ph:"막히는 구절 · 외운 방식"}],
+    "청소":  [{k:"대상",t:"txt",lb:"구역",ph:"주방 싱크대"},
+              {k:"내용",t:"txt",lb:"한 것"}],
+    "중국어":[{k:"구분",t:"sel",o:["단어","문법","작문","회화","듀오링고"]},
+              {k:"수량",t:"num",lb:"새 단어 수"},
+              {k:"내용",t:"txt",lb:"한 것",ph:"HSK4 단어장 3과 · 듀오링고 2유닛"}],
+    "개발":  [{k:"내용",t:"txt",lb:"무엇을 시도했나"},
+              {k:"대상",t:"txt",lb:"남은 결과",ph:"커밋 · 문서 · 배포한 것"}],
+    "독서":  [{k:"대상",t:"txt",lb:"책",ph:"제목"},
+              {k:"시작",t:"num",lb:"시작 쪽"},{k:"끝",t:"num",lb:"끝 쪽"},
+              {k:"내용",t:"txt",lb:"메모",ph:"기억할 문장 · 생각"}]
+  };
+  var PLAN_ORDER = ["운동","훈련","계시록","청소","점심","중국어","개발","독서","재량"];
+  var CORE_TOTAL = 15, FLEX_TOTAL = 5, DAY_TOTAL = 20;
+  var TIER = {green:20, amber:7, red:3};
+  var REV_START = "2026-08-26", REV_DAYS = 92, REV_CHAPTERS = 22;
+  var LUNCH_MIN = 60, START_H = 8;
+  var KEY = "graceos.routine.v2", OLDKEY = "graceos.routine.v1";
+  var mem = null;
+
+  function blank(){ return {days:{}, chaps:{}, books:{}, focus:25, brk:5, theme:null}; }
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(raw) return Object.assign(blank(), JSON.parse(raw));
+      var old = localStorage.getItem(OLDKEY);   // v1 기록을 잃지 않는다
+      if(old){
+        var o = JSON.parse(old), s = blank();
+        s.days = o.days || {}; s.theme = o.theme || null;
+        for(var i=1;i<=(o.rev||0);i++) s.chaps[i] = true;
+        return s;
+      }
+    }catch(e){}
+    return mem || blank();
+  }
+  function save(){ mem = S; try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  var S = load();
+
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function josa(w,a,b){ var c=w.charCodeAt(w.length-1)-0xAC00;
+    return w + ((c>=0&&c<=11171&&c%28!==0)?a:b); }
+  function K(x){ return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")
+                      +"-"+String(x.getDate()).padStart(2,"0"); }
+  function todayKey(){ return K(new Date()); }
+  function day(k){
+    k = k || todayKey();
+    if(!S.days[k]) S.days[k] = {p:{}, memos:[], review:""};
+    var d = S.days[k];
+    if(!d.p) d.p = {}; if(!d.memos) d.memos = [];
+    return d;
+  }
+  function totalOf(d){ var n=0; for(var k in d.p) n += d.p[k]||0; return n; }
+  function coreOf(d){ var n=0; ITEMS.forEach(function(it){ n += Math.min(d.p[it.k]||0, it.core); }); return n; }
+  function gradeOf(n){
+    if(n>=TIER.green) return {c:"g-green", t:"🟢 온전한 날", n:"온전한 날"};
+    if(n>=TIER.amber) return {c:"g-amber", t:"🟡 외출한 날", n:"외출한 날"};
+    if(n>=TIER.red)   return {c:"g-red",   t:"🔴 최소선",     n:"최소선"};
+    return {c:"", t:"—", n:"미달"};
+  }
+  function item(k){ return ITEMS.filter(function(x){return x.k===k;})[0]; }
+
+  // ── 타이머 ───────────────────────────────────────────────────────────
+  var T = {running:false, phase:"focus", endsAt:0, left:S.focus*60, item:null};
+  var tick=null, wake=null;
+  var CIRC = 2*Math.PI*94;
+  $("progc").style.strokeDasharray = CIRC;
+
+  function phaseMin(){ return T.phase==="focus" ? S.focus : S.brk; }
+  function paintTimer(){
+    var total = phaseMin()*60;
+    var left = T.running ? Math.max(0, Math.round((T.endsAt-Date.now())/1000)) : T.left;
+    $("clock").textContent = String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0");
+    $("progc").style.strokeDashoffset = CIRC*(1-left/total);
+    $("phase").textContent = T.phase==="focus" ? (T.running?"집중":"준비") : "휴식";
+    document.body.classList.toggle("is-break", T.phase==="break");
+    var it = T.item && item(T.item);
+    $("nowitem").textContent = it ? (it.ico+" "+it.nm) : "항목을 고르세요";
+    $("startbtn").textContent = T.running ? "일시정지" : (left<total ? "이어서" : "시작");
+    $("startbtn").disabled = !T.item;
+    $("hint").textContent = "1뽀모 = 집중 "+S.focus+"분 + 휴식 "+S.brk+"분 · 하루 20뽀모";
+  }
+  function ping(){
+    try{
+      var ac = new (window.AudioContext||window.webkitAudioContext)();
+      [0,0.18].forEach(function(off,i){
+        var o=ac.createOscillator(), g=ac.createGain();
+        o.frequency.value = i?660:880; o.type="sine";
+        g.gain.setValueAtTime(0.0001, ac.currentTime+off);
+        g.gain.exponentialRampToValueAtTime(0.25, ac.currentTime+off+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+off+0.32);
+        o.connect(g); g.connect(ac.destination);
+        o.start(ac.currentTime+off); o.stop(ac.currentTime+off+0.35);
+      });
+    }catch(e){}
+  }
+  function requestWake(on){
+    try{
+      if(on && navigator.wakeLock && !wake){
+        navigator.wakeLock.request("screen").then(function(w){wake=w;}).catch(function(){});
+      }else if(!on && wake){ wake.release().catch(function(){}); wake=null; }
+    }catch(e){}
+  }
+  function startPause(){
+    if(!T.item) return;
+    if(T.running){
+      T.left = Math.max(0, Math.round((T.endsAt-Date.now())/1000));
+      T.running=false; clearInterval(tick); tick=null; requestWake(false);
+    }else{
+      T.endsAt = Date.now()+T.left*1000; T.running=true; requestWake(true);
+      tick = setInterval(function(){
+        if(Math.round((T.endsAt-Date.now())/1000)<=0) finish(); else paintTimer();
+      },250);
+    }
+    paintTimer();
+  }
+  function finish(){
+    clearInterval(tick); tick=null; T.running=false; requestWake(false); ping();
+    if(T.phase==="focus"){
+      var d = day(); d.p[T.item] = (d.p[T.item]||0)+1; save(); render();
+      openMemo(T.item, null);
+      T.phase="break"; T.left=S.brk*60;
+    }else{ T.phase="focus"; T.left=S.focus*60; }
+    paintTimer();
+  }
+  $("startbtn").addEventListener("click", startPause);
+  $("skipbtn").addEventListener("click", function(){
+    clearInterval(tick); tick=null; T.running=false; requestWake(false);
+    T.phase = T.phase==="focus"?"break":"focus"; T.left = phaseMin()*60; paintTimer();
+  });
+  $("resetbtn").addEventListener("click", function(){
+    clearInterval(tick); tick=null; T.running=false; requestWake(false);
+    T.phase="focus"; T.left=S.focus*60; paintTimer();
+  });
+
+  // ── 항목별 기록 입력 ─────────────────────────────────────────────────
+  var editing = null;   // {idx} 또는 null(새로 쓰기)
+  function openMemo(k, idx){
+    if(!k) return;
+    editing = (idx==null) ? null : {idx:idx};
+    var it = item(k), rec = idx==null ? {item:k} : day().memos[idx];
+    $("memoh").textContent = it.ico+" "+it.nm+(idx==null?" 기록":" 고치기");
+    var box = $("memofields"); box.innerHTML = "";
+    box.dataset.item = k;
+    var run = [];                       // 연달아 나온 숫자 칸을 모았다가 한 줄로 낸다
+    function flush(){
+      if(!run.length) return;
+      var g = document.createElement("div");
+      g.className = run.length >= 3 ? "grid3" : (run.length === 2 ? "grid2" : "");
+      g.innerHTML = run.map(function(n){
+        return '<label class="f"><span>'+esc(n.lb)+'</span>'
+             + '<input type="number" id="'+n.id+'" value="'+esc(n.cur)+'"></label>'; }).join("");
+      box.appendChild(g); run = [];
+    }
+    FIELDS[k].forEach(function(f){
+      var lb = f.lb || f.k, id = "fld_"+f.k, cur = rec[f.k]==null ? "" : rec[f.k];
+      if(f.t === "num"){ run.push({lb:lb, id:id, cur:cur}); return; }
+      flush();
+      var w = document.createElement("label"); w.className = "f";
+      if(f.t === "sel"){
+        w.innerHTML = '<span>'+esc(lb)+'</span>';
+        var sel = document.createElement("select"); sel.id = id;
+        sel.innerHTML = '<option value="">—</option>'+f.o.map(function(o){
+          return '<option'+(o===cur?" selected":"")+'>'+esc(o)+'</option>'; }).join("");
+        w.appendChild(sel);
+      }else{
+        w.innerHTML = '<span>'+esc(lb)+'</span>'
+          + '<input type="text" id="'+id+'" placeholder="'+esc(f.ph||"")+'" value="'+esc(cur)+'">';
+      }
+      box.appendChild(w);
+    });
+    flush();
+    if($("memodlg").showModal) $("memodlg").showModal();
+  }
+  function closeDlg(id){ var d = $(id); try{ d.close(); }catch(e){ d.removeAttribute("open"); } }
+  $("memo-skip").addEventListener("click", function(){ editing = null; closeDlg("memodlg"); });
+  $("memo-save").addEventListener("click", function(){
+    var k = $("memofields").dataset.item, rec = {item:k}, any = false;
+    FIELDS[k].forEach(function(f){
+      var el = $("fld_"+f.k); if(!el) return;
+      var v = el.value.trim();
+      if(v !== ""){ rec[f.k] = (f.t === "num") ? Number(v) : v; any = true; }
+    });
+    var d = day();
+    if(editing){ rec.at = d.memos[editing.idx].at; d.memos[editing.idx] = rec; }
+    else if(any){
+      var n = new Date();
+      rec.at = String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");
+      d.memos.push(rec);
+    }
+    editing = null; save(); render(); closeDlg("memodlg");
+  });
+  $("addmemo").addEventListener("click", function(){
+    openMemo(T.item || (filterKey!=="all" ? filterKey : "계시록"), null);
+  });
+
+  function memoLine(m){
+    var parts = [];
+    if(m["구분"]) parts.push(m["구분"]);
+    if(m.item==="계시록" && m["장"]!=null){
+      parts.push(m["장"]+"장 "+(m["시작"]!=null?m["시작"]:"?")+"~"+(m["끝"]!=null?m["끝"]:"?")+"절");
+    }else if(m.item==="독서" && (m["시작"]!=null||m["끝"]!=null)){
+      if(m["대상"]) parts.push("『"+m["대상"]+"』");
+      parts.push((m["시작"]!=null?m["시작"]:"?")+"~"+(m["끝"]!=null?m["끝"]:"?")+"쪽");
+    }else if(m["대상"]) parts.push(m["대상"]);
+    if(m.item==="중국어" && m["수량"]) parts.push("새 단어 "+m["수량"]+"개");
+    return parts.join(" · ");
+  }
+
+  // ── 그리기 ───────────────────────────────────────────────────────────
+  var filterKey = "all";
+  function render(){
+    var d = day(), tot = totalOf(d), core = coreOf(d), flex = Math.max(0, tot-core);
+    var g = gradeOf(tot), now = new Date();
+    $("dateline").textContent = (now.getMonth()+1)+"월 "+now.getDate()+"일 ("
+      + ["일","월","화","수","목","금","토"][now.getDay()]+")";
+    $("grade").className = "gradechip "+g.c;
+    $("grade").textContent = g.t+" "+tot+"/"+DAY_TOTAL;
+    $("corecount").textContent = core+" / "+CORE_TOTAL;
+    $("flexcount").textContent = Math.min(flex,FLEX_TOTAL)+" / "+FLEX_TOTAL;
+
+    var box = $("items"); box.innerHTML = "";
+    ITEMS.forEach(function(it){
+      var got = d.p[it.k]||0, b = document.createElement("button");
+      b.className = "row"+(T.item===it.k?" sel":""); b.type="button";
+      var pips = "";
+      for(var i=0;i<it.core;i++) pips += '<span class="pip'+(i<got?" on":"")+'"></span>';
+      for(var j=it.core;j<got;j++) pips += '<span class="pip extra on"></span>';
+      var mine = d.memos.filter(function(m){return m.item===it.k;}).length;
+      b.innerHTML = '<span class="ico">'+it.ico+'</span><span><span class="nm">'+it.nm+'</span>'
+        + '<div class="sub">'+planTime(it.k)+(it.sub?"  ·  "+it.sub:"")
+        + (mine?"  ·  기록 "+mine:"")+'</div></span><span class="pips">'+pips+'</span>';
+      b.addEventListener("click", function(){
+        if(T.running) return; T.item = it.k; render(); paintTimer();
+      });
+      box.appendChild(b);
+    });
+
+    var fp = $("flexpips"); fp.innerHTML = "";
+    for(var q=0;q<FLEX_TOTAL;q++){
+      var sp=document.createElement("span");
+      sp.className="pip flex"+(q<flex?" on":"");
+      sp.style.width=sp.style.height="13px"; fp.appendChild(sp);
+    }
+    $("t-green").classList.toggle("hit", tot>=TIER.green);
+    $("t-amber").classList.toggle("hit", tot>=TIER.amber && tot<TIER.green);
+    $("t-red").classList.toggle("hit", tot>=TIER.red && tot<TIER.amber);
+
+    // 기록 필터
+    var ff = $("memofilter"); ff.innerHTML = "";
+    var opts = [{k:"all", nm:"전체"}].concat(ITEMS.map(function(it){
+      return {k:it.k, nm:it.ico+" "+it.nm}; }));
+    opts.forEach(function(o){
+      var c = document.createElement("button");
+      c.className = "chip"+(filterKey===o.k?" on":""); c.type="button";
+      var n = o.k==="all" ? d.memos.length : d.memos.filter(function(m){return m.item===o.k;}).length;
+      c.textContent = o.nm + (n?" "+n:"");
+      c.addEventListener("click", function(){ filterKey=o.k; render(); });
+      ff.appendChild(c);
+    });
+
+    var ml = $("memolog"); ml.innerHTML = "";
+    var list = d.memos.map(function(m,i){ return {m:m,i:i}; })
+                      .filter(function(x){ return filterKey==="all" || x.m.item===filterKey; });
+    if(!list.length){
+      ml.innerHTML = '<div class="logitem" style="color:var(--fg-3)">'
+        + (filterKey==="all" ? "뽀모가 끝나면 항목에 맞춰 물어봅니다." : "이 항목 기록이 아직 없습니다.")
+        + '</div>';
+    }else{
+      list.slice().reverse().forEach(function(x){
+        var m = x.m, it2 = item(m.item), el = document.createElement("div");
+        el.className = "logitem";
+        el.innerHTML = '<button class="del" data-del="'+x.i+'">지움</button>'
+          + '<div class="meta">'+esc(m.at||"")+"  "+(it2?it2.ico+" "+it2.nm:esc(m.item))+'</div>'
+          + (memoLine(m) ? '<div class="body" style="font-weight:600">'+esc(memoLine(m))+'</div>' : "")
+          + (m["내용"] ? '<div class="body">'+esc(m["내용"])+'</div>' : "");
+        el.addEventListener("click", function(ev){
+          if(ev.target.dataset.del!=null) return;
+          openMemo(m.item, x.i);
+        });
+        ml.appendChild(el);
+      });
+      ml.querySelectorAll("[data-del]").forEach(function(b){
+        b.addEventListener("click", function(ev){
+          ev.stopPropagation();
+          day().memos.splice(+b.dataset.del,1); save(); render();
+        });
+      });
+    }
+
+    $("plan").textContent = planText();
+    // 뽀모를 길게 잡으면 20뽀모가 08~19시 창을 넘는다. 넘으면 몇 개가 들어가는지 알려준다
+    var pr = planRows(), pn = $("plannote"), END = 19*60;
+    if(pr.end > END){
+      var fits = Math.floor((END - START_H*60 - LUNCH_MIN) / (S.focus + S.brk));
+      pn.className = "note warn";
+      pn.textContent = "이 길이로는 20뽀모가 08~19시 안에 안 들어갑니다 — 들어가는 건 "
+        + fits + "뽀모까지(끝 " + hm(pr.end) + "). 코어 15뽀모를 지키려면 집중을 "
+        + Math.floor((END - START_H*60 - LUNCH_MIN)/CORE_TOTAL - S.brk) + "분 이하로 두세요.";
+    }else{
+      pn.className = "note";
+      pn.textContent = "어려운 코어를 오전에 뒀습니다. 외출은 대개 오후에 생기니까요. 끝 " + hm(pr.end) + ".";
+    }
+    renderProgress(); renderLog();
+  }
+
+  // 배치표는 설정한 뽀모 길이에 따라 시각이 움직인다
+  function planRows(){
+    var t = START_H*60, unit = S.focus+S.brk, out = [];
+    PLAN_ORDER.forEach(function(k){
+      var n, nm, ico;
+      if(k==="점심"){ n=0; nm="점심"; ico="🍚"; }
+      else if(k==="재량"){ n=FLEX_TOTAL; nm="재량"; ico="🎛"; }
+      else { var it=item(k); n=it.core; nm=it.nm; ico=it.ico; }
+      out.push({t:t, ico:ico, nm:nm, n:n});
+      t += (k==="점심") ? LUNCH_MIN : n*unit;
+    });
+    return {rows:out, end:t};
+  }
+  function planTime(k){
+    var r = planRows().rows.filter(function(x){ return x.nm===item(k).nm; })[0];
+    return r ? hm(r.t) : "";
+  }
+  function hm(mins){
+    return String(Math.floor(mins/60)%24).padStart(2,"0")+":"+String(mins%60).padStart(2,"0");
+  }
+  function planText(){
+    var p = planRows();
+    var s = p.rows.map(function(r){
+      return hm(r.t)+"  "+r.ico+" "+r.nm+(r.n?"  "+r.n+"뽀모":"");
+    }).join("\n");
+    return s+"\n"+hm(p.end)+"  ─ 하루 끝";
+  }
+
+  // ── 진도 ─────────────────────────────────────────────────────────────
+  function elapsed(){
+    var a=new Date(REV_START+"T00:00:00"), b=new Date(); b.setHours(0,0,0,0);
+    return Math.floor((b-a)/86400000);
+  }
+  function allMemos(){
+    var out=[]; Object.keys(S.days).forEach(function(k){
+      (S.days[k].memos||[]).forEach(function(m){ out.push({k:k,m:m}); }); });
+    return out;
+  }
+  function renderProgress(){
+    var el = elapsed(), done = Object.keys(S.chaps).filter(function(c){return S.chaps[c];}).length;
+    var target = el<0 ? 0 : Math.min(REV_CHAPTERS, Math.ceil((el+1)/REV_DAYS*REV_CHAPTERS));
+    $("rev-r").textContent = done+" / "+REV_CHAPTERS+"장";
+    $("rev-bar").style.width = (done/REV_CHAPTERS*100)+"%";
+    $("rev-mark").style.left = "calc("+(target/REV_CHAPTERS*100)+"% - 1px)";
+    var diff = done-target, note=$("rev-note");
+    if(el<0){ note.className="note";
+      note.textContent = "착수 "+REV_START+" · "+(-el)+"일 남음. 22장 ÷ 92일 = 4.2일에 1장."; }
+    else if(diff<=-2){ note.className="note warn";
+      note.textContent = "🔴 목표선보다 "+(-diff)+"장 뒤집니다. 지금 회복하지 않으면 3개월이 4개월이 됩니다."; }
+    else if(diff<0){ note.className="note";
+      note.textContent = "목표선 "+target+"장 · "+(-diff)+"장 뒤짐. 아직 따라잡을 수 있습니다."; }
+    else { note.className="note";
+      note.textContent = "목표선 "+target+"장 · "+(diff>0?"+"+diff+"장 앞섬":"딱 맞음")+"."; }
+
+    var cg = $("chaps"); cg.innerHTML = "";
+    for(var c=1;c<=REV_CHAPTERS;c++){
+      (function(c){
+        var b=document.createElement("button"); b.type="button";
+        b.className = "chap"+(S.chaps[c]?" on":"")+((!S.chaps[c]&&c<=target)?" due":"");
+        b.textContent = c;
+        b.addEventListener("click", function(){
+          S.chaps[c] = !S.chaps[c]; save(); renderProgress(); renderLog();
+        });
+        cg.appendChild(b);
+      })(c);
+    }
+    // 기록에서 뽑은 계시록 절 흔적
+    var rv = allMemos().filter(function(x){ return x.m.item==="계시록" && x.m["장"]!=null; });
+    if(rv.length){
+      var last = rv[rv.length-1].m;
+      var verses = rv.reduce(function(a,x){
+        var s=x.m["시작"], e=x.m["끝"];
+        return a + ((s!=null&&e!=null&&e>=s) ? (e-s+1) : 0); },0);
+      $("rev-detail").textContent = "기록: 누적 "+verses+"절 · 마지막 "
+        + last["장"]+"장 "+(last["시작"]!=null?last["시작"]:"?")+"~"+(last["끝"]!=null?last["끝"]:"?")+"절";
+    }else $("rev-detail").textContent = "";
+
+    // 자동 집계
+    var ms = allMemos().map(function(x){return x.m;});
+    var pages = ms.filter(function(m){return m.item==="독서"&&m["시작"]!=null&&m["끝"]!=null&&m["끝"]>=m["시작"];})
+                  .reduce(function(a,m){return a+(m["끝"]-m["시작"]+1);},0);
+    var words = ms.filter(function(m){return m.item==="중국어"&&m["수량"];})
+                  .reduce(function(a,m){return a+m["수량"];},0);
+    var devOut = ms.filter(function(m){return m.item==="개발"&&m["대상"];}).length;
+    var as = $("autostats"); as.innerHTML = "";
+    function statRow(l, r, sub){
+      var e=document.createElement("div"); e.className="prog-row";
+      e.innerHTML = '<div class="prog-top"><span class="l">'+l+'</span><span class="r">'+r+'</span></div>'
+        + (sub?'<div class="note">'+sub+'</div>':"");
+      as.appendChild(e);
+    }
+    statRow("📚 읽은 쪽", pages+"쪽", "독서 기록의 시작·끝 쪽에서 셉니다");
+    statRow("🇨🇳 새 단어", words+"개", "중국어 기록의 새 단어 수를 더합니다");
+    statRow("💻 결과 남긴 뽀모", devOut+"회", "개발 기록에 「남은 결과」를 적은 횟수");
+    ["중국어","훈련","운동"].forEach(function(k){
+      var by = {};
+      ms.filter(function(m){return m.item===k&&m["구분"];}).forEach(function(m){
+        by[m["구분"]] = (by[m["구분"]]||0)+1; });
+      var keys = Object.keys(by);
+      if(!keys.length) return;
+      var e=document.createElement("div"); e.className="prog-row";
+      e.innerHTML = '<div class="prog-top"><span class="l">'+item(k).ico+" "+item(k).nm+' 구분</span></div>'
+        + '<div class="split">'+keys.sort(function(a,b){return by[b]-by[a];}).map(function(x){
+            return '<span class="tag">'+esc(x)+' <b>'+by[x]+'</b></span>'; }).join("")+'</div>';
+      as.appendChild(e);
+    });
+
+    // 책
+    var bmap = {};
+    ms.filter(function(m){return m.item==="독서"&&m["대상"];}).forEach(function(m){
+      var t=m["대상"].trim();
+      if(!bmap[t]) bmap[t]={p:0, last:0};
+      if(m["시작"]!=null&&m["끝"]!=null&&m["끝"]>=m["시작"]) bmap[t].p += m["끝"]-m["시작"]+1;
+      if(m["끝"]!=null) bmap[t].last = Math.max(bmap[t].last, m["끝"]);
+    });
+    var titles = Object.keys(bmap);
+    var doneN = titles.filter(function(t){return S.books[t];}).length;
+    $("bk-r").textContent = titles.length ? doneN+" / "+titles.length+"권 완독" : "";
+    var bb = $("books"); bb.innerHTML = "";
+    if(!titles.length){
+      bb.innerHTML = '<div class="logitem" style="color:var(--fg-3)">독서 기록에 책 이름을 적으면 여기 모입니다.</div>';
+    }else titles.forEach(function(t){
+      var e=document.createElement("div"); e.className="logitem";
+      e.innerHTML = '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center">'
+        + '<div><div style="font-weight:600">'+(S.books[t]?"✅ ":"")+esc(t)+'</div>'
+        + '<div class="meta">'+bmap[t].p+'쪽 읽음 · 마지막 '+bmap[t].last+'쪽</div></div>'
+        + '<button class="sm" data-bk="'+esc(t)+'">'+(S.books[t]?"되돌리기":"완독")+'</button></div>';
+      bb.appendChild(e);
+    });
+    bb.querySelectorAll("[data-bk]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var t=b.dataset.bk; S.books[t] = !S.books[t]; save(); renderProgress(); renderLog();
+      });
+    });
+
+    renderWeek();
+  }
+
+  function weekKeys(){
+    var now=new Date(), dow=(now.getDay()+6)%7, mon=new Date(now);
+    mon.setDate(now.getDate()-dow); mon.setHours(0,0,0,0);
+    var out=[];
+    for(var i=0;i<7;i++){
+      var dd=new Date(mon); dd.setDate(mon.getDate()+i);
+      if(dd>now) break; out.push(K(dd));
+    }
+    $("weekrange").textContent = (mon.getMonth()+1)+"/"+mon.getDate()+" ~";
+    return out;
+  }
+  function renderWeek(){
+    var keys = weekKeys(), sums={}, tiers={green:0,amber:0,red:0,zero:0}, flexUnused=0;
+    ITEMS.forEach(function(it){ sums[it.k]=0; });
+    keys.forEach(function(k){
+      var rec=S.days[k]; if(!rec){ tiers.zero++; return; }
+      var t=totalOf(rec);
+      ITEMS.forEach(function(it){ sums[it.k]+=rec.p[it.k]||0; });
+      if(t>=TIER.green) tiers.green++; else if(t>=TIER.amber) tiers.amber++;
+      else if(t>=TIER.red) tiers.red++; else tiers.zero++;
+      if(t-coreOf(rec)===0) flexUnused++;
+    });
+    var wc=$("weekcard"); wc.innerHTML="";
+    ITEMS.forEach(function(it){
+      var goal=it.core*keys.length, got=sums[it.k], r=document.createElement("div");
+      r.className="prog-row";
+      r.innerHTML='<div class="prog-top"><span class="l" style="font-size:13.5px">'+it.ico+" "+it.nm
+        +'</span><span class="r">'+got+" / "+goal+'</span></div>'
+        +'<div class="bar"><i style="width:'+(goal?Math.min(100,got/goal*100):0)+'%"></i></div>';
+      wc.appendChild(r);
+    });
+    var v=[];
+    if(tiers.red+tiers.zero>2) v.push("🔴 최소선 이하가 "+(tiers.red+tiers.zero)+"일입니다. 참으라고 하지 말고 코어를 줄이세요 — 설계가 현실과 안 맞는 겁니다.");
+    ITEMS.forEach(function(it){
+      var zero = keys.filter(function(k){ return !(S.days[k]&&S.days[k].p[it.k]); }).length;
+      if(zero>=3) v.push("⚠️ "+josa(it.nm,"이","가")+" "+zero+"일 비었습니다. 시간이 아니라 배치의 문제일 수 있습니다.");
+    });
+    if(keys.length>=5 && flexUnused>=5) v.push("💡 재량이 계속 남습니다. 코어를 늘려도 됩니다.");
+    $("weekverdict").innerHTML = v.length ? v.map(esc).join("<br>") : "이번 주는 특이 신호 없습니다.";
+  }
+
+  // ── 기록 · 인사이트 ──────────────────────────────────────────────────
+  function renderLog(){
+    var ks = Object.keys(S.days).sort().reverse();
+    var totalPomo = ks.reduce(function(a,k){ return a+totalOf(S.days[k]); },0);
+    var actives = ks.filter(function(k){ return totalOf(S.days[k])>=TIER.red; });
+    var best = ks.slice().sort(function(a,b){ return totalOf(S.days[b])-totalOf(S.days[a]); })[0];
+
+    var s=0, cur=new Date(); cur.setHours(0,0,0,0);
+    for(;;){
+      var r2=S.days[K(cur)];
+      if(r2 && totalOf(r2)>=TIER.red){ s++; cur.setDate(cur.getDate()-1); } else break;
+    }
+    $("streak").textContent = s ? "연속 "+s+"일" : "";
+
+    $("kpis").innerHTML =
+      kpi("누적 뽀모", totalPomo, actives.length+"일 기록")
+    + kpi("하루 평균", actives.length?Math.round(totalPomo/actives.length*10)/10:0, "기록한 날 기준")
+    + kpi("최고 기록", best?totalOf(S.days[best]):0, best||"—")
+    + kpi("계시록", Object.keys(S.chaps).filter(function(c){return S.chaps[c];}).length+"장", "22장 중");
+
+    // 항목별 꾸준함
+    var counts = {};
+    ITEMS.forEach(function(it){
+      counts[it.k] = actives.filter(function(k){ return S.days[k].p[it.k]; }).length;
+    });
+    var sorted = ITEMS.slice().sort(function(a,b){ return counts[b.k]-counts[a.k]; });
+    var ins = [];
+    if(actives.length >= 3){
+      ins.push("🌱 가장 꾸준한 항목은 "+sorted[0].ico+" "+sorted[0].nm
+               +"입니다 — "+actives.length+"일 중 "+counts[sorted[0].k]+"일.");
+      var worst = sorted[sorted.length-1];
+      if(counts[worst.k] < actives.length*0.5)
+        ins.push("🔎 "+josa(worst.nm,"이","가")+" 가장 자주 빠집니다 — "+counts[worst.k]+"일. 시간이 아니라 자리의 문제일 수 있습니다.");
+    }
+    var revs = ks.filter(function(k){ return S.days[k].review; });
+    if(revs.length) ins.push("🪞 회고가 "+revs.length+"개 쌓였습니다. 아래에서 이어 읽으면 그날들의 결이 보입니다.");
+    var el = elapsed();
+    if(el >= 0){
+      var doneC = Object.keys(S.chaps).filter(function(c){return S.chaps[c];}).length;
+      var pace = doneC ? Math.round((el+1)/doneC*10)/10 : null;
+      if(pace) ins.push("📖 지금 속도는 "+pace+"일에 1장입니다. 목표는 4.2일에 1장.");
+    }
+    if(!ins.length) ins.push("기록이 사흘쯤 쌓이면 여기에 패턴이 보이기 시작합니다.");
+    $("insight").innerHTML = ins.map(function(t){
+      return '<div class="note" style="font-size:12.5px;color:var(--fg-2)">'+esc(t)+'</div>'; }).join("");
+
+    var rv=$("reviews"); rv.innerHTML="";
+    if(!revs.length) rv.innerHTML='<div class="logitem" style="color:var(--fg-3)">아직 회고가 없습니다.</div>';
+    revs.forEach(function(k){
+      var e=document.createElement("div"); e.className="logitem";
+      e.innerHTML='<div class="meta">'+k+"  ·  "+gradeOf(totalOf(S.days[k])).t+'</div>'
+        +'<div class="quote">“'+esc(S.days[k].review)+'”</div>';
+      rv.appendChild(e);
+    });
+
+    var h=$("history"); h.innerHTML="";
+    if(!ks.length) h.innerHTML='<div class="logitem" style="color:var(--fg-3)">아직 기록이 없습니다.</div>';
+    ks.slice(0,30).forEach(function(k){
+      var rec=S.days[k], t=totalOf(rec), e=document.createElement("div");
+      e.className="logitem";
+      var parts=ITEMS.filter(function(it){return rec.p[it.k];})
+                     .map(function(it){return it.ico+rec.p[it.k];}).join("  ");
+      e.innerHTML='<div class="meta">'+k+"  ·  "+gradeOf(t).t+"  ·  "+t+"/"+DAY_TOTAL
+        +"  ·  기록 "+(rec.memos||[]).length+'</div><div class="body">'+(parts||"—")+'</div>';
+      h.appendChild(e);
+    });
+  }
+  function kpi(t,v,s){
+    return '<div class="kpi"><div class="t">'+esc(t)+'</div><div class="v">'+esc(v)
+         + '</div><div class="s">'+esc(s)+'</div></div>';
+  }
+
+  $("reviewbtn").addEventListener("click", function(){
+    $("revtxt").value = day().review||"";
+    if($("revdlg").showModal) $("revdlg").showModal();
+  });
+  $("rev-cancel").addEventListener("click", function(){ closeDlg("revdlg"); });
+  $("rev-save").addEventListener("click", function(){
+    day().review = $("revtxt").value.trim(); save(); render(); closeDlg("revdlg");
+  });
+
+  // ── 설정 ─────────────────────────────────────────────────────────────
+  var PRESETS = [[25,5],[30,5],[45,10],[50,10],[15,3]];
+  $("setbtn").addEventListener("click", function(){
+    $("s-focus").value = S.focus; $("s-break").value = S.brk;
+    var p=$("presets"); p.innerHTML="";
+    PRESETS.forEach(function(pr){
+      var b=document.createElement("button"); b.type="button";
+      b.className="chip"+((S.focus===pr[0]&&S.brk===pr[1])?" on":"");
+      b.textContent = pr[0]+" + "+pr[1];
+      b.addEventListener("click", function(){
+        $("s-focus").value=pr[0]; $("s-break").value=pr[1];
+        p.querySelectorAll(".chip").forEach(function(x){x.classList.remove("on");});
+        b.classList.add("on");
+      });
+      p.appendChild(b);
+    });
+    if($("setdlg").showModal) $("setdlg").showModal();
+  });
+  $("set-cancel").addEventListener("click", function(){ closeDlg("setdlg"); });
+  $("set-save").addEventListener("click", function(){
+    S.focus = Math.max(5,  Math.min(90, Number($("s-focus").value) || 25));
+    S.brk   = Math.max(1,  Math.min(30, Number($("s-break").value) || 5));
+    save();
+    if(!T.running){ T.phase = "focus"; T.left = S.focus*60; }
+    render(); paintTimer(); closeDlg("setdlg");
+  });
+
+  // ── 내보내기 ─────────────────────────────────────────────────────────
+  function csvCell(v){
+    v = v==null ? "" : String(v);
+    return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+  }
+  function toCSV(rows){ return rows.map(function(r){ return r.map(csvCell).join(","); }).join("\n"); }
+  function download(name, text){
+    if(window.claude && window.claude.downloads && window.claude.downloads.save){
+      window.claude.downloads.save({filename:name, data:text})
+        .then(function(){ $("expnote").textContent = name+" 저장했습니다."; })
+        .catch(function(){ $("expnote").textContent = "저장이 취소됐습니다."; });
+      return;
+    }
+    try{
+      var a=document.createElement("a");
+      a.href=URL.createObjectURL(new Blob(["﻿"+text],{type:"text/csv;charset=utf-8"}));
+      a.download=name; a.click(); URL.revokeObjectURL(a.href);
+      $("expnote").textContent = name+" 저장했습니다.";
+    }catch(e){ $("expnote").textContent = "이 환경에서는 내려받기가 막혀 있습니다."; }
+  }
+  $("csv1").addEventListener("click", function(){
+    var rows = [["기록","날짜","항목","구분","대상","장","시작","끝","수량","내용","뽀모","시각"]];
+    Object.keys(S.days).sort().forEach(function(k){
+      (S.days[k].memos||[]).forEach(function(m){
+        var title = (item(m.item)?item(m.item).ico+" ":"")+m.item
+                  + (memoLine(m)?" — "+memoLine(m):"");
+        var qty = m["수량"]!=null ? m["수량"]
+                : (m.item==="독서"&&m["시작"]!=null&&m["끝"]!=null&&m["끝"]>=m["시작"] ? m["끝"]-m["시작"]+1 : "");
+        rows.push([k.slice(5).replace("-","/")+" "+title, k, m.item, m["구분"]||"", m["대상"]||"",
+                   m["장"]!=null?m["장"]:"", m["시작"]!=null?m["시작"]:"", m["끝"]!=null?m["끝"]:"",
+                   qty, m["내용"]||"", 1, m.at||""]);
+      });
+    });
+    download("일일루틴기록_"+todayKey()+".csv", toCSV(rows));
+  });
+  $("csv2").addEventListener("click", function(){
+    var rows = [["날짜","등급","총 뽀모","코어","재량","회고","계시록 진도","읽은 쪽","새 단어"]];
+    Object.keys(S.days).sort().forEach(function(k){
+      var d=S.days[k], t=totalOf(d), c=coreOf(d), ms=d.memos||[];
+      var pg = ms.filter(function(m){return m.item==="독서"&&m["시작"]!=null&&m["끝"]!=null&&m["끝"]>=m["시작"];})
+                 .reduce(function(a,m){return a+(m["끝"]-m["시작"]+1);},0);
+      var wd = ms.filter(function(m){return m.item==="중국어"&&m["수량"];})
+                 .reduce(function(a,m){return a+m["수량"];},0);
+      var rv = ms.filter(function(m){return m.item==="계시록"&&m["장"]!=null;});
+      var rvs = rv.length ? rv.map(function(m){
+        return m["장"]+"장 "+(m["시작"]!=null?m["시작"]:"?")+"~"+(m["끝"]!=null?m["끝"]:"?")+"절"; }).join(", ") : "";
+      rows.push([k, gradeOf(t).n, t, c, Math.max(0,t-c), d.review||"", rvs, pg, wd]);
+    });
+    download("하루회고_"+todayKey()+".csv", toCSV(rows));
+  });
+  $("exportbtn").addEventListener("click", function(){
+    download("루틴백업_"+todayKey()+".json", JSON.stringify(S,null,2));
+  });
+
+  // ── 탭 · 테마 ────────────────────────────────────────────────────────
+  document.querySelectorAll("nav button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("on");});
+      document.querySelectorAll(".page").forEach(function(x){x.classList.remove("on");});
+      b.classList.add("on"); $(b.dataset.page).classList.add("on"); window.scrollTo(0,0);
+    });
+  });
+  function applyTheme(){
+    if(S.theme) document.documentElement.setAttribute("data-theme", S.theme);
+    else document.documentElement.removeAttribute("data-theme");
+  }
+  $("themebtn").addEventListener("click", function(){
+    S.theme = S.theme==="dark" ? "light" : S.theme==="light" ? null : "dark";
+    save(); applyTheme();
+  });
+  document.addEventListener("visibilitychange", function(){
+    if(!document.hidden && T.running){
+      if(Math.round((T.endsAt-Date.now())/1000)<=0) finish(); else paintTimer();
+    }
+  });
+
+  applyTheme(); render(); paintTimer();
+})();
+</script>
+
+<script>
+// 오프라인에서도 열리게. 실패해도 앱은 그대로 돈다 — 등록은 있으면 좋은 것이지 조건이 아니다
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function () {});
+  });
+}
+</script>
+</body>
+</html>

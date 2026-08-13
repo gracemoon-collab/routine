@@ -88,11 +88,12 @@
 
   .timer{padding:20px 18px 18px;display:grid;gap:14px;justify-items:center;text-align:center}
   .ring{position:relative;width:212px;height:212px}
-  .ring svg{transform:rotate(-90deg);display:block}
-  .ring .track{fill:none;stroke:var(--surface-2);stroke-width:9}
-  .ring .prog{fill:none;stroke:var(--accent);stroke-width:9;stroke-linecap:round;
-              transition:stroke-dashoffset .35s linear}
-  body.is-break .ring .prog{stroke:var(--flex)}
+  .ring svg{display:block}
+  /* 원래 뽀모도로 시계처럼 **면이 채워졌다 줄어든다**. 선이 아니라 부채꼴이다 */
+  .ring .track{fill:var(--surface-2)}
+  .ring .prog{fill:var(--accent)}
+  body.is-break .ring .prog{fill:var(--flex)}
+  .ring .plate{fill:var(--surface)}   /* 가운데 판 — 숫자가 색 위에 안 얹히게 */
   .ring .inner{position:absolute;inset:0;display:grid;place-content:center;gap:2px}
   #clock{font-family:var(--mono);font-size:52px;font-weight:600;letter-spacing:-.03em;
          font-variant-numeric:tabular-nums;line-height:1}
@@ -239,8 +240,9 @@
     <div class="card timer">
       <div class="ring">
         <svg width="212" height="212" viewBox="0 0 212 212" aria-hidden="true">
-          <circle class="track" cx="106" cy="106" r="94"></circle>
-          <circle class="prog" id="progc" cx="106" cy="106" r="94"></circle>
+          <circle class="track" cx="106" cy="106" r="96"></circle>
+          <path class="prog" id="progp"></path>
+          <circle class="plate" cx="106" cy="106" r="62"></circle>
         </svg>
         <div class="inner">
           <div id="phase">준비</div>
@@ -518,15 +520,26 @@
   // ── 타이머 ───────────────────────────────────────────────────────────
   var T = {running:false, phase:"focus", endsAt:0, left:S.focus*60, item:null};
   var tick=null, wake=null;
-  var CIRC = 2*Math.PI*94;
-  $("progc").style.strokeDasharray = CIRC;
+  var CX = 106, CY = 106, RR = 96;
+  // 12시에서 시계방향으로 **남은 만큼** 부채꼴을 그린다. 시간이 가면 색이 줄어든다.
+  function wedge(f){
+    if(f <= 0.0001) return "";
+    if(f >= 0.9999){   // 한 바퀴는 호 하나로 못 그린다 — 반원 두 개로 나눈다
+      return "M "+CX+" "+(CY-RR)+" A "+RR+" "+RR+" 0 1 1 "+CX+" "+(CY+RR)
+           + " A "+RR+" "+RR+" 0 1 1 "+CX+" "+(CY-RR)+" Z";
+    }
+    var th = 2*Math.PI*f;
+    var ex = CX + RR*Math.sin(th), ey = CY - RR*Math.cos(th);
+    return "M "+CX+" "+CY+" L "+CX+" "+(CY-RR)
+         + " A "+RR+" "+RR+" 0 "+(f>0.5?1:0)+" 1 "+ex.toFixed(2)+" "+ey.toFixed(2)+" Z";
+  }
 
   function phaseMin(){ return T.phase==="focus" ? S.focus : S.brk; }
   function paintTimer(){
     var total = phaseMin()*60;
     var left = T.running ? Math.max(0, Math.round((T.endsAt-Date.now())/1000)) : T.left;
     $("clock").textContent = String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0");
-    $("progc").style.strokeDashoffset = CIRC*(1-left/total);
+    $("progp").setAttribute("d", wedge(left/total));
     $("phase").textContent = T.phase==="focus" ? (T.running?"집중":"준비") : "휴식";
     document.body.classList.toggle("is-break", T.phase==="break");
     var it = T.item && item(T.item);

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>하루 20뽀모 — 전환기 루틴</title>
 <meta name="description" content="전환기 루틴 트래커 — 하루 20뽀모.">
-<meta name="theme-color" content="#E9ECE8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2E9E5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160F0D" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icons/icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
@@ -19,51 +19,93 @@
 <body>
 <style>
   :root{
-    --bg:#E9ECE8; --surface:#F5F7F3; --surface-2:#DFE4DC;
-    --fg:#171C19; --fg-2:#4A544D; --fg-3:#7A857C;
-    --line:#C9D1C7;
-    --accent:#1F6B57; --accent-soft:#CBE0D6;
-    --flex:#9A6B1F; --flex-soft:#EBDCBF;
-    --warn:#A33F3A; --warn-soft:#EFD3D0;
-    --on-accent:#F5F7F3;
-    --shadow:0 1px 2px rgba(23,28,25,.06), 0 8px 24px -12px rgba(23,28,25,.18);
+    --bg:#F2E9E5; --surface:#FBF6F3; --surface-2:#EAD8D1;
+    --fg:#2A1613; --fg-2:#5C403A; --fg-3:#8B6B63;
+    --line:#DFC5BB;
+    --accent:#C0362A; --accent-soft:#F2D8D3;
+    --flex:#A9741B; --flex-soft:#F0E1C4;
+    --warn:#8E2A22; --warn-soft:#F0D2CE;
+    --on-accent:#FBF6F3;
+    --shadow:0 1px 2px rgba(42,22,19,.07), 0 8px 24px -12px rgba(42,22,19,.22);
     --r:14px;
     --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",
            "Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#160F0D; --surface:#1F1513; --surface-2:#2C1E1A;
+    --fg:#F1E3DE; --fg-2:#BCA39C; --fg-3:#8B716A;
+    --line:#3A2722;
+    --accent:#E45A4B; --accent-soft:#3A1B16;
+    --flex:#DCA84E; --flex-soft:#3A2A14;
+    --warn:#F0796D; --warn-soft:#3E1D19;
+    --on-accent:#160F0D;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 24px -12px rgba(0,0,0,.75);
   }
-  @media (prefers-color-scheme:dark){
-    :root{
-      --bg:#121614; --surface:#1A201D; --surface-2:#242C28;
-      --fg:#E7EDE8; --fg-2:#A8B3AC; --fg-3:#78837C;
-      --line:#2C3531;
-      --accent:#5FBFA1; --accent-soft:#1E3830;
-      --flex:#D9A94E; --flex-soft:#3A2F19;
-      --warn:#E0716B; --warn-soft:#3B211F;
-      --on-accent:#0E1412;
-      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
-    }
+}
+:root[data-theme="dark"]{
+    --bg:#160F0D; --surface:#1F1513; --surface-2:#2C1E1A;
+    --fg:#F1E3DE; --fg-2:#BCA39C; --fg-3:#8B716A;
+    --line:#3A2722;
+    --accent:#E45A4B; --accent-soft:#3A1B16;
+    --flex:#DCA84E; --flex-soft:#3A2A14;
+    --warn:#F0796D; --warn-soft:#3E1D19;
+    --on-accent:#160F0D;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 24px -12px rgba(0,0,0,.75);
+}
+:root[data-theme="light"]{
+    --bg:#F2E9E5; --surface:#FBF6F3; --surface-2:#EAD8D1;
+    --fg:#2A1613; --fg-2:#5C403A; --fg-3:#8B6B63;
+    --line:#DFC5BB;
+    --accent:#C0362A; --accent-soft:#F2D8D3;
+    --flex:#A9741B; --flex-soft:#F0E1C4;
+    --warn:#8E2A22; --warn-soft:#F0D2CE;
+    --on-accent:#FBF6F3;
+    --shadow:0 1px 2px rgba(42,22,19,.07), 0 8px 24px -12px rgba(42,22,19,.22);
+}
+:root[data-skin="potato"]{
+    --bg:#EDE5D6; --surface:#F8F2E6; --surface-2:#E1D5BE;
+    --fg:#231E16; --fg-2:#544B3B; --fg-3:#83775F;
+    --line:#D2C4A8;
+    --accent:#9A7233; --accent-soft:#E9DCBF;
+    --flex:#6E7A46; --flex-soft:#DEE3C8;
+    --warn:#94472A; --warn-soft:#EFD9CC;
+    --on-accent:#F8F2E6;
+    --shadow:0 1px 2px rgba(35,30,22,.07), 0 8px 24px -12px rgba(35,30,22,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root[data-skin="potato"]{
+    --bg:#15120C; --surface:#1E1A12; --surface-2:#2B2418;
+    --fg:#EEE6D4; --fg-2:#B7AC94; --fg-3:#877C64;
+    --line:#382F20;
+    --accent:#D6AC5E; --accent-soft:#352A15;
+    --flex:#A8B878; --flex-soft:#2A3018;
+    --warn:#E28A63; --warn-soft:#3A2318;
+    --on-accent:#15120C;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 24px -12px rgba(0,0,0,.75);
   }
-  :root[data-theme="dark"]{
-    --bg:#121614; --surface:#1A201D; --surface-2:#242C28;
-    --fg:#E7EDE8; --fg-2:#A8B3AC; --fg-3:#78837C;
-    --line:#2C3531;
-    --accent:#5FBFA1; --accent-soft:#1E3830;
-    --flex:#D9A94E; --flex-soft:#3A2F19;
-    --warn:#E0716B; --warn-soft:#3B211F;
-    --on-accent:#0E1412;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
-  }
-  :root[data-theme="light"]{
-    --bg:#E9ECE8; --surface:#F5F7F3; --surface-2:#DFE4DC;
-    --fg:#171C19; --fg-2:#4A544D; --fg-3:#7A857C;
-    --line:#C9D1C7;
-    --accent:#1F6B57; --accent-soft:#CBE0D6;
-    --flex:#9A6B1F; --flex-soft:#EBDCBF;
-    --warn:#A33F3A; --warn-soft:#EFD3D0;
-    --on-accent:#F5F7F3;
-    --shadow:0 1px 2px rgba(23,28,25,.06), 0 8px 24px -12px rgba(23,28,25,.18);
-  }
+}
+:root[data-skin="potato"][data-theme="dark"]{
+    --bg:#15120C; --surface:#1E1A12; --surface-2:#2B2418;
+    --fg:#EEE6D4; --fg-2:#B7AC94; --fg-3:#877C64;
+    --line:#382F20;
+    --accent:#D6AC5E; --accent-soft:#352A15;
+    --flex:#A8B878; --flex-soft:#2A3018;
+    --warn:#E28A63; --warn-soft:#3A2318;
+    --on-accent:#15120C;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 24px -12px rgba(0,0,0,.75);
+}
+:root[data-skin="potato"][data-theme="light"]{
+    --bg:#EDE5D6; --surface:#F8F2E6; --surface-2:#E1D5BE;
+    --fg:#231E16; --fg-2:#544B3B; --fg-3:#83775F;
+    --line:#D2C4A8;
+    --accent:#9A7233; --accent-soft:#E9DCBF;
+    --flex:#6E7A46; --flex-soft:#DEE3C8;
+    --warn:#94472A; --warn-soft:#EFD9CC;
+    --on-accent:#F8F2E6;
+    --shadow:0 1px 2px rgba(35,30,22,.07), 0 8px 24px -12px rgba(35,30,22,.22);
+}
 
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
@@ -86,20 +128,28 @@
   .gradechip.g-amber{background:var(--flex-soft);color:var(--flex);border-color:transparent}
   .gradechip.g-red{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 
-  .timer{padding:20px 18px 18px;display:grid;gap:14px;justify-items:center;text-align:center}
-  .ring{position:relative;width:212px;height:212px}
-  .ring svg{display:block}
+  .timer{padding:18px 18px 18px;display:grid;gap:12px;justify-items:center;text-align:center}
+  .mascot{width:76px;height:76px;display:block;margin-bottom:-6px}
+  .ring{position:relative;width:262px;height:262px;max-width:100%}
+  .ring svg{display:block;width:100%;height:auto}
+  /* 실물 뽀모도로 타이머처럼 테두리에 분 눈금을 새긴다 */
+  .tick{stroke:var(--fg-3);stroke-linecap:round;opacity:.55}
+  .tick.maj{stroke:var(--fg-2);opacity:1}
+  .ticknum{fill:var(--fg-2);font-family:var(--mono);font-size:12px;font-weight:700;
+           text-anchor:middle;dominant-baseline:central}
+  .hand{fill:var(--fg)}
   /* 원래 뽀모도로 시계처럼 **면이 채워졌다 줄어든다**. 선이 아니라 부채꼴이다 */
   .ring .track{fill:var(--surface-2)}
   .ring .prog{fill:var(--accent)}
   body.is-break .ring .prog{fill:var(--flex)}
   .ring .plate{fill:var(--surface)}   /* 가운데 판 — 숫자가 색 위에 안 얹히게 */
   .ring .inner{position:absolute;inset:0;display:grid;place-content:center;gap:2px}
-  #clock{font-family:var(--mono);font-size:52px;font-weight:600;letter-spacing:-.03em;
+  #clock{font-family:var(--mono);font-size:36px;font-weight:600;letter-spacing:-.03em;
          font-variant-numeric:tabular-nums;line-height:1}
-  #phase{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-3);
+  #phase{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-3);
          font-weight:700}
-  #nowitem{font-size:15px;font-weight:700;color:var(--fg-2)}
+  #nowitem{font-size:12.5px;font-weight:700;color:var(--fg-2);max-width:104px;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 auto}
 
   .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
   button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);
@@ -229,6 +279,7 @@
     <div style="display:grid;gap:6px;justify-items:end">
       <span class="gradechip" id="grade">— 0/20</span>
       <div style="display:flex;gap:6px">
+        <button class="ghost sm" id="skinbtn">🍅</button>
         <button class="ghost sm" id="setbtn">설정</button>
         <button class="ghost sm" id="themebtn">테마</button>
       </div>
@@ -238,11 +289,15 @@
   <!-- ══ 오늘 ══ -->
   <div class="page on" id="p-today">
     <div class="card timer">
+      <svg class="mascot" id="mascot" viewBox="0 0 100 100" aria-hidden="true"></svg>
       <div class="ring">
-        <svg width="212" height="212" viewBox="0 0 212 212" aria-hidden="true">
-          <circle class="track" cx="106" cy="106" r="96"></circle>
+        <svg viewBox="0 0 260 260" aria-hidden="true">
+          <g id="ticks"></g>
+          <g id="ticknums"></g>
+          <circle class="track" cx="130" cy="130" r="88"></circle>
           <path class="prog" id="progp"></path>
-          <circle class="plate" cx="106" cy="106" r="62"></circle>
+          <circle class="plate" cx="130" cy="130" r="60"></circle>
+          <path class="hand" d="M130 7 L137 20 L123 20 Z"></path>
         </svg>
         <div class="inner">
           <div id="phase">준비</div>
@@ -474,7 +529,7 @@
   var KEY = "graceos.routine.v2", OLDKEY = "graceos.routine.v1";
   var mem = null;
 
-  function blank(){ return {days:{}, chaps:{}, books:{}, focus:25, brk:5, theme:null}; }
+  function blank(){ return {days:{}, chaps:{}, books:{}, focus:25, brk:5, theme:null, skin:"tomato"}; }
   function load(){
     try{
       var raw = localStorage.getItem(KEY);
@@ -520,7 +575,7 @@
   // ── 타이머 ───────────────────────────────────────────────────────────
   var T = {running:false, phase:"focus", endsAt:0, left:S.focus*60, item:null};
   var tick=null, wake=null;
-  var CX = 106, CY = 106, RR = 96;
+  var CX = 130, CY = 130, RR = 88;
   // 12시에서 시계방향으로 **남은 만큼** 부채꼴을 그린다. 시간이 가면 색이 줄어든다.
   function wedge(f){
     if(f <= 0.0001) return "";
@@ -540,6 +595,7 @@
     var left = T.running ? Math.max(0, Math.round((T.endsAt-Date.now())/1000)) : T.left;
     $("clock").textContent = String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0");
     $("progp").setAttribute("d", wedge(left/total));
+    drawTicks();
     $("phase").textContent = T.phase==="focus" ? (T.running?"집중":"준비") : "휴식";
     document.body.classList.toggle("is-break", T.phase==="break");
     var it = T.item && item(T.item);
@@ -548,6 +604,77 @@
     $("startbtn").disabled = !T.item;
     $("hint").textContent = "1뽀모 = 집중 "+S.focus+"분 + 휴식 "+S.brk+"분 · 하루 20뽀모";
   }
+  // 실물 타이머처럼 1분 눈금. 5분마다 굵게 + 숫자. 집중 길이가 바뀌면 눈금도 다시 새긴다
+  var lastTicks = null;
+  function drawTicks(){
+    var mins = S.focus;
+    if(lastTicks === mins) return;
+    lastTicks = mins;
+    var step = mins > 60 ? 2 : 1;            // 60분을 넘으면 2분 간격 — 안 그러면 뭉갠다
+    var g = $("ticks"), gn = $("ticknums");
+    g.innerHTML = ""; gn.innerHTML = "";
+    for(var m = 0; m < mins; m += step){
+      var maj = (m % 5 === 0);
+      var th = 2*Math.PI*(m/mins);
+      var sn = Math.sin(th), cs = Math.cos(th);
+      var r1 = 124, r2 = maj ? 110 : 116;
+      var ln = document.createElementNS("http://www.w3.org/2000/svg","line");
+      ln.setAttribute("class", "tick"+(maj?" maj":""));
+      ln.setAttribute("stroke-width", maj ? 3 : 1.6);
+      ln.setAttribute("x1", (CX+r1*sn).toFixed(1)); ln.setAttribute("y1", (CY-r1*cs).toFixed(1));
+      ln.setAttribute("x2", (CX+r2*sn).toFixed(1)); ln.setAttribute("y2", (CY-r2*cs).toFixed(1));
+      g.appendChild(ln);
+      // 0분(=12시)엔 지시침이 있으니 숫자를 넣지 않는다
+      if(maj && m !== 0){
+        var t = document.createElementNS("http://www.w3.org/2000/svg","text");
+        t.setAttribute("class","ticknum");
+        t.setAttribute("x", (CX+99*sn).toFixed(1)); t.setAttribute("y", (CY-99*cs).toFixed(1));
+        t.textContent = m;
+        gn.appendChild(t);
+      }
+    }
+  }
+
+  // 🍅 토마토 · 🥔 감자 — 같은 골격에 몸통·머리만 갈아 끼운다
+  var MASCOT = {
+    tomato:
+      '<defs><radialGradient id="mg" cx="38%" cy="30%">'
+      + '<stop offset="0" stop-color="#F2695A"/><stop offset="1" stop-color="#C0362A"/>'
+      + '</radialGradient></defs>'
+      + '<ellipse cx="50" cy="88" rx="26" ry="4" fill="rgba(0,0,0,.13)"/>'
+      + '<circle cx="50" cy="58" r="33" fill="url(#mg)" stroke="#20140F" stroke-width="5"/>'
+      + '<path d="M50 25 v-11" stroke="#2E7D32" stroke-width="5" stroke-linecap="round"/>'
+      + '<path d="M50 26 L34 17 L40 27 L24 26 L38 33 M50 26 L66 17 L60 27 L76 26 L62 33"'
+      + ' fill="#3F9142" stroke="#2E7D32" stroke-width="3.4" stroke-linejoin="round"/>'
+      + '<circle cx="40" cy="55" r="4.2" fill="#20140F"/><circle cx="41.4" cy="53.6" r="1.4" fill="#fff"/>'
+      + '<circle cx="60" cy="55" r="4.2" fill="#20140F"/><circle cx="61.4" cy="53.6" r="1.4" fill="#fff"/>'
+      + '<path d="M43 66 q7 7 14 0" stroke="#20140F" stroke-width="4" fill="none" stroke-linecap="round"/>',
+    potato:
+      '<defs><radialGradient id="mg" cx="36%" cy="28%">'
+      + '<stop offset="0" stop-color="#E8D3A8"/><stop offset="1" stop-color="#B9945C"/>'
+      + '</radialGradient></defs>'
+      + '<ellipse cx="50" cy="88" rx="27" ry="4" fill="rgba(0,0,0,.13)"/>'
+      + '<path d="M50 24 c20 0 32 13 32 30 c0 18-13 28-32 28 c-19 0-32-10-32-28 c0-17 12-30 32-30 z"'
+      + ' fill="url(#mg)" stroke="#20140F" stroke-width="5"/>'
+      + '<path d="M50 25 c0-8 5-13 11-14 c-1 8-4 12-11 14 z" fill="#7FA65A" stroke="#20140F" stroke-width="3.2"/>'
+      + '<circle cx="40" cy="53" r="4.2" fill="#20140F"/><circle cx="41.4" cy="51.6" r="1.4" fill="#fff"/>'
+      + '<circle cx="60" cy="53" r="4.2" fill="#20140F"/><circle cx="61.4" cy="51.6" r="1.4" fill="#fff"/>'
+      + '<ellipse cx="33" cy="62" rx="5" ry="3.4" fill="#D9A98E" opacity=".65"/>'
+      + '<ellipse cx="67" cy="62" rx="5" ry="3.4" fill="#D9A98E" opacity=".65"/>'
+      + '<path d="M43 64 q7 7 14 0" stroke="#20140F" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      + '<circle cx="30" cy="45" r="1.8" fill="#8A6A3E"/><circle cx="70" cy="72" r="1.6" fill="#8A6A3E"/>'
+  };
+  function applySkin(){
+    var sk = S.skin === "potato" ? "potato" : "tomato";
+    document.documentElement.setAttribute("data-skin", sk);
+    $("mascot").innerHTML = MASCOT[sk];
+    $("skinbtn").textContent = sk === "tomato" ? "🍅" : "🥔";
+    $("skinbtn").title = sk === "tomato" ? "토마토 — 눌러서 감자로" : "감자 — 눌러서 토마토로";
+  }
+  $("skinbtn").addEventListener("click", function(){
+    S.skin = (S.skin === "potato") ? "tomato" : "potato"; save(); applySkin();
+  });
+
   function ping(){
     try{
       var ac = new (window.AudioContext||window.webkitAudioContext)();
@@ -1135,7 +1262,7 @@
     }
   });
 
-  applyTheme(); render(); paintTimer();
+  applyTheme(); applySkin(); render(); paintTimer();
 })();
 </script>
 

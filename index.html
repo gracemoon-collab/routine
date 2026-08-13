@@ -187,6 +187,7 @@
   .pip.flex.on{background:var(--flex);border-color:var(--flex)}
   .pip.extra{border-style:dashed;border-color:var(--flex)}
   .pip.extra.on{background:var(--flex);border-color:var(--flex);border-style:solid}
+  .flexico{font-size:17px;line-height:1}
 
   .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
   .tier{padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--line);
@@ -481,6 +482,14 @@
   </div>
   <div class="note">1뽀모 = 집중 + 휴식. 기본은 25 + 5입니다. 바꾸면 아래 배치표의 시각도 같이 움직입니다.</div>
   <div class="chips" id="presets"></div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:2px 0">
+  <div class="eyebrow">초기화</div>
+  <div class="note">되돌릴 수 없습니다. 한 번 더 눌러야 지워집니다.</div>
+  <div class="btns" style="justify-content:stretch">
+    <button type="button" style="flex:1" id="wipe-day">오늘 기록만</button>
+    <button type="button" style="flex:1" id="wipe-all">전부</button>
+  </div>
+  <div class="note" id="wipenote"></div>
   <div class="btns" style="justify-content:flex-end">
     <button type="button" class="ghost" id="set-cancel">닫기</button>
     <button type="button" class="primary" id="set-save">저장</button>
@@ -557,9 +566,9 @@
   function todayKey(){ return K(new Date()); }
   function day(k){
     k = k || todayKey();
-    if(!S.days[k]) S.days[k] = {p:{}, memos:[], review:""};
+    if(!S.days[k]) S.days[k] = {p:{}, memos:[], review:"", seq:[]};
     var d = S.days[k];
-    if(!d.p) d.p = {}; if(!d.memos) d.memos = [];
+    if(!d.p) d.p = {}; if(!d.memos) d.memos = []; if(!d.seq) d.seq = [];
     return d;
   }
   function totalOf(d){ var n=0; for(var k in d.p) n += d.p[k]||0; return n; }
@@ -712,7 +721,10 @@
   function finish(){
     clearInterval(tick); tick=null; T.running=false; requestWake(false); ping();
     if(T.phase==="focus"){
-      var d = day(); d.p[T.item] = (d.p[T.item]||0)+1; save(); render();
+      var d = day();
+      d.p[T.item] = (d.p[T.item]||0)+1;
+      d.seq.push(T.item);          // 🔴 순서를 안 남기면 나중에 하루를 재현할 수 없다
+      save(); render();
       openMemo(T.item, null);
       T.phase="break"; T.left=S.brk*60;
     }else{ T.phase="focus"; T.left=S.focus*60; }
@@ -831,11 +843,30 @@
       box.appendChild(b);
     });
 
+    // 순서를 훑어 코어를 넘긴 뽀모가 「무엇이었는지」 뽑는다
+    var seen = {}, filled = [];
+    (d.seq||[]).forEach(function(k){
+      seen[k] = (seen[k]||0) + 1;
+      var it2 = item(k);
+      if(it2 && seen[k] > it2.core) filled.push(it2.ico);
+    });
     var fp = $("flexpips"); fp.innerHTML = "";
-    for(var q=0;q<FLEX_TOTAL;q++){
-      var sp=document.createElement("span");
-      sp.className="pip flex"+(q<flex?" on":"");
-      sp.style.width=sp.style.height="13px"; fp.appendChild(sp);
+    for(var q=0;q<Math.max(FLEX_TOTAL, filled.length);q++){
+      var sp = document.createElement("span");
+      if(filled[q]){
+        sp.className = "flexico"; sp.textContent = filled[q];
+      }else{
+        sp.className = "pip flex"; sp.style.width = sp.style.height = "13px";
+      }
+      fp.appendChild(sp);
+    }
+    if(!filled.length && flex > 0){   // 옛 기록엔 순서가 없다 — 개수만 칠한다
+      fp.innerHTML = "";
+      for(var w=0;w<FLEX_TOTAL;w++){
+        var s2 = document.createElement("span");
+        s2.className = "pip flex"+(w<flex?" on":"");
+        s2.style.width = s2.style.height = "13px"; fp.appendChild(s2);
+      }
     }
     $("t-green").classList.toggle("hit", tot>=TIER.green);
     $("t-amber").classList.toggle("hit", tot>=TIER.amber && tot<TIER.green);
@@ -1175,8 +1206,38 @@
       });
       p.appendChild(b);
     });
+    $("wipenote").textContent = ""; armed = null;
+    $("wipe-day").textContent = "오늘 기록만"; $("wipe-all").textContent = "전부";
     if($("setdlg").showModal) $("setdlg").showModal();
   });
+  // 🔴 지우는 단추는 두 번 눌러야 듣는다. 실수로 하루를 날리는 게 제일 나쁘다
+  var armed = null, armTimer = null;
+  function arm(which, btn, label, run){
+    if(armed === which){
+      clearTimeout(armTimer); armed = null; btn.textContent = label;
+      run(); save(); render(); paintTimer();
+      $("wipenote").textContent = "지웠습니다.";
+      return;
+    }
+    armed = which; btn.textContent = "정말요? 한 번 더";
+    $("wipenote").textContent = "";
+    clearTimeout(armTimer);
+    armTimer = setTimeout(function(){ armed = null; btn.textContent = label; }, 4000);
+  }
+  $("wipe-day").addEventListener("click", function(){
+    arm("day", this, "오늘 기록만", function(){
+      delete S.days[todayKey()];
+      T.item = null; T.phase = "focus"; T.left = S.focus*60;
+    });
+  });
+  $("wipe-all").addEventListener("click", function(){
+    arm("all", this, "전부", function(){
+      var keep = {focus:S.focus, brk:S.brk, theme:S.theme, skin:S.skin};
+      S = Object.assign(blank(), keep);
+      T.item = null; T.phase = "focus"; T.left = S.focus*60;
+    });
+  });
+
   $("set-cancel").addEventListener("click", function(){ closeDlg("setdlg"); });
   $("set-save").addEventListener("click", function(){
     S.focus = Math.max(5,  Math.min(90, Number($("s-focus").value) || 25));

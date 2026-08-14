@@ -1374,13 +1374,42 @@
     if(!T.running){ T.item = null; T.phase = "focus"; T.left = S.focus*60; }
     render(); paintTimer();
   }
+  // 🔴 새 판이 올라와도 앱이 모른다 (2026-08-15 신설)
+  //    홈 화면 앱은 되살아날 때 문서를 다시 받지 않는다. 그래서 서비스워커가
+  //    새 판을 가지러 갈 일 자체가 안 생긴다 — **고쳐서 올려도 폰에서는 옛 판이 계속 뜬다.**
+  //    2026-08-15에 마스코트 뒷모습을 올렸는데 폰에서 안 바뀐 게 이것 때문이었다.
+  //    (2026-08-14 날짜 넘김 버그와 뿌리가 같다 — 되살아날 때 아무것도 다시 안 본다)
+  //    ⚠️ 갱신을 여기서 직접 하지 않는다. 「가서 확인해봐」까지만 하고,
+  //       실제 교체는 서비스워커가 skipWaiting·clients.claim 으로 끝낸 뒤에 새로고침한다.
+  var reloading = false;
+  function checkAppUpdate(){
+    if(!("serviceWorker" in navigator) || !navigator.serviceWorker.getRegistration) return;
+    try{
+      navigator.serviceWorker.getRegistration().then(function(reg){
+        if(reg && reg.update) reg.update();
+      }).catch(function(){});
+    }catch(e){}
+  }
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.addEventListener("controllerchange", function(){
+      // 🔴 한 번만 새로고침한다. 안 막으면 되돌이표가 된다
+      if(reloading) return;
+      reloading = true;
+      // 돌고 있는 뽀모는 저장돼 있으니 새로고침해도 안 잃는다
+      location.reload();
+    });
+  }
+
+  function onWake(){ checkDayRoll(); checkAppUpdate(); }
+
   setInterval(checkDayRoll, 60000);          // 열어둔 채 자정을 넘길 때
-  window.addEventListener("focus", checkDayRoll);
-  window.addEventListener("pageshow", checkDayRoll);   // 되살아날 때 (iOS 홈 화면 앱)
+  setInterval(checkAppUpdate, 30 * 60000);   // 30분마다 새 판이 있나 본다
+  window.addEventListener("focus", onWake);
+  window.addEventListener("pageshow", onWake);   // 되살아날 때 (iOS 홈 화면 앱)
 
   document.addEventListener("visibilitychange", function(){
     if(document.hidden) return;
-    checkDayRoll();
+    onWake();
     if(T.running){
       if(Math.round((T.endsAt-Date.now())/1000)<=0) finish(); else paintTimer();
     }

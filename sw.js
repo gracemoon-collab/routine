@@ -1,5 +1,5 @@
 // 자동 생성 — apps/routine/build.py 가 만든다. 직접 고치지 마라
-var CACHE = "routine-51b30bc721";
+var CACHE = "routine-a0ef3c3882";
 var ASSETS = ["./", "./index.html", "./manifest.webmanifest",
               "./icons/tomato-192.png", "./icons/tomato-512.png", "./icons/tomato-180.png"];
 

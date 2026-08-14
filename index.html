@@ -129,7 +129,15 @@
   .gradechip.g-red{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 
   .timer{padding:18px 18px 18px;display:grid;gap:12px;justify-items:center;text-align:center}
-  .mascot{width:76px;height:76px;display:block;margin-bottom:-6px}
+  .mascot{width:76px;height:76px;display:block;margin-bottom:-6px;
+          transform-origin:50% 88%}   /* 발밑에서 돈다 — 그래야 「서서 흔드는」 꼴이 된다 */
+  /* 집중이 돌아갈 때만 살랑살랑. 일시정지·준비·휴식엔 멈춘다 */
+  .mascot.sway{animation:sway 2.2s ease-in-out infinite}
+  @keyframes sway{
+    0%,100%{transform:rotate(-6deg)}
+    50%    {transform:rotate(6deg)}
+  }
+  @media (prefers-reduced-motion:reduce){ .mascot.sway{animation:none} }
   .ring{position:relative;width:262px;height:262px;max-width:100%}
   .ring svg{display:block;width:100%;height:auto}
   /* 실물 뽀모도로 타이머처럼 테두리에 분 눈금을 새긴다 */
@@ -709,8 +717,14 @@
     var el = $("mascot");
     if(!el || typeof MASCOT === "undefined" || !MASCOT) return;
     var sk = S.skin === "potato" ? "potato" : "tomato";
+    var t = (typeof T !== "undefined") && T ? T : null;
     // 🔴 휴식일 때만 뒤돌아앉는다. 「준비」(안 돌 때)는 앞을 본다 — 시작을 기다리는 중이니까
-    var back = (typeof T !== "undefined") && T && T.phase === "break";
+    var back = !!(t && t.phase === "break");
+    // 🔴 집중이 실제로 돌아갈 때만 흔든다 (2026-08-15 사장 요청).
+    //    일시정지·준비·휴식엔 멈춘다 — 움직임이 「지금 돌고 있다」는 신호여야 한다
+    el.classList.toggle("sway", !!(t && t.running && t.phase === "focus"));
+
+    // ⚠️ 클래스 토글은 위에서 먼저 한다. 아래 guard에 걸리면 흔들림이 안 바뀐다
     var key = sk + (back ? "_back" : "");
     if(key === mascotKey) return;
     mascotKey = key;

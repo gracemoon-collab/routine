@@ -607,6 +607,7 @@
     drawTicks();
     $("phase").textContent = T.phase==="focus" ? (T.running?"집중":"준비") : "휴식";
     document.body.classList.toggle("is-break", T.phase==="break");
+    paintMascot();   // 휴식이면 뒤돌아앉는다. 바뀔 때만 다시 그린다
     var it = T.item && item(T.item);
     $("nowitem").textContent = it ? (it.ico+" "+it.nm) : "항목을 고르세요";
     $("startbtn").textContent = T.running ? "일시정지" : (left<total ? "이어서" : "시작");
@@ -671,12 +672,56 @@
       + '<ellipse cx="33" cy="62" rx="5" ry="3.4" fill="#D9A98E" opacity=".65"/>'
       + '<ellipse cx="67" cy="62" rx="5" ry="3.4" fill="#D9A98E" opacity=".65"/>'
       + '<path d="M43 64 q7 7 14 0" stroke="#20140F" stroke-width="4" fill="none" stroke-linecap="round"/>'
-      + '<circle cx="30" cy="45" r="1.8" fill="#8A6A3E"/><circle cx="70" cy="72" r="1.6" fill="#8A6A3E"/>'
+      + '<circle cx="30" cy="45" r="1.8" fill="#8A6A3E"/><circle cx="70" cy="72" r="1.6" fill="#8A6A3E"/>',
+
+    // 🔴 휴식 중 — 뒤돌아앉은 모습 (2026-08-15 사장 요청)
+    //    「돌아앉았다」를 읽히게 하는 건 셋이다:
+    //    ① 얼굴이 없다  ② 하이라이트가 반대쪽으로 간다  ③ 몸이 눌려 앉은 꼴이 된다
+    //    앉은 표현은 rx는 그대로 두고 ry만 줄여서 만든다 — 폭이 변하면 다른 캐릭터로 보인다
+    tomato_back:
+      '<defs><radialGradient id="mg" cx="64%" cy="34%">'
+      + '<stop offset="0" stop-color="#D9503F"/><stop offset="1" stop-color="#A82C21"/>'
+      + '</radialGradient></defs>'
+      + '<ellipse cx="50" cy="90" rx="30" ry="4.2" fill="rgba(0,0,0,.15)"/>'
+      + '<ellipse cx="50" cy="62" rx="33" ry="30" fill="url(#mg)" stroke="#20140F" stroke-width="5"/>'
+      + '<path d="M50 31 v-11" stroke="#2E7D32" stroke-width="5" stroke-linecap="round"/>'
+      + '<path d="M50 32 L33 23 L39 33 L23 32 L37 39 M50 32 L67 23 L61 33 L77 32 L63 39"'
+      + ' fill="#357B39" stroke="#2E7D32" stroke-width="3.4" stroke-linejoin="round"/>'
+      + '<path d="M50 40 q4 21 0 42" stroke="rgba(0,0,0,.16)" stroke-width="3.2" fill="none" stroke-linecap="round"/>',
+
+    potato_back:
+      '<defs><radialGradient id="mg" cx="66%" cy="30%">'
+      + '<stop offset="0" stop-color="#D8C097"/><stop offset="1" stop-color="#A8834C"/>'
+      + '</radialGradient></defs>'
+      + '<ellipse cx="50" cy="90" rx="31" ry="4.2" fill="rgba(0,0,0,.15)"/>'
+      + '<path d="M50 29 c20 0 32 12 32 28 c0 17-13 27-32 27 c-19 0-32-10-32-27 c0-16 12-28 32-28 z"'
+      + ' fill="url(#mg)" stroke="#20140F" stroke-width="5"/>'
+      + '<path d="M50 30 c0-8-5-13-11-14 c1 8 4 12 11 14 z" fill="#6E9450" stroke="#20140F" stroke-width="3.2"/>'
+      + '<path d="M50 38 q5 20 0 40" stroke="rgba(0,0,0,.14)" stroke-width="3.2" fill="none" stroke-linecap="round"/>'
+      + '<circle cx="35" cy="50" r="1.8" fill="#8A6A3E"/><circle cx="66" cy="70" r="1.6" fill="#8A6A3E"/>'
+      + '<circle cx="58" cy="42" r="1.5" fill="#8A6A3E"/>'
   };
+
+  // 어떤 그림이 걸려 있는지 기억해 둔다 — paintTimer가 1초마다 도는데
+  // 매번 innerHTML을 갈아끼우면 그릴 필요가 없는 걸 그리게 된다
+  var mascotKey = "";
+  function paintMascot(){
+    var el = $("mascot");
+    if(!el || typeof MASCOT === "undefined" || !MASCOT) return;
+    var sk = S.skin === "potato" ? "potato" : "tomato";
+    // 🔴 휴식일 때만 뒤돌아앉는다. 「준비」(안 돌 때)는 앞을 본다 — 시작을 기다리는 중이니까
+    var back = (typeof T !== "undefined") && T && T.phase === "break";
+    var key = sk + (back ? "_back" : "");
+    if(key === mascotKey) return;
+    mascotKey = key;
+    el.innerHTML = MASCOT[key] || MASCOT[sk];
+  }
+
   function applySkin(){
     var sk = S.skin === "potato" ? "potato" : "tomato";
     document.documentElement.setAttribute("data-skin", sk);
-    $("mascot").innerHTML = MASCOT[sk];
+    mascotKey = "";           // 스킨이 바뀌면 다시 그린다
+    paintMascot();
     $("skinbtn").textContent = sk === "tomato" ? "🍅" : "🥔";
     $("skinbtn").title = sk === "tomato" ? "토마토 — 눌러서 감자로" : "감자 — 눌러서 토마토로";
   }

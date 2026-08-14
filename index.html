@@ -1317,8 +1317,26 @@
     S.theme = S.theme==="dark" ? "light" : S.theme==="light" ? null : "dark";
     save(); applyTheme();
   });
+  // 🔴 날짜가 넘어가도 화면이 안 바뀌던 문제 (2026-08-13 사장 발견)
+  //    홈 화면 앱은 껐다 켜도 **다시 읽지 않고 되살아난다.** render() 가 다시 안 돌면
+  //    어제 판이 그대로 떠 있다. 그래서 「지금 며칠인가」를 주기적으로·복귀할 때마다 본다.
+  var curDay = todayKey();
+  function checkDayRoll(){
+    var k = todayKey();
+    if(k === curDay) return;
+    curDay = k;
+    // ⚠️ 자정을 넘겨 돌고 있는 뽀모는 죽이지 않는다. 그 뽀모는 오늘 것으로 기록된다
+    if(!T.running){ T.item = null; T.phase = "focus"; T.left = S.focus*60; }
+    render(); paintTimer();
+  }
+  setInterval(checkDayRoll, 60000);          // 열어둔 채 자정을 넘길 때
+  window.addEventListener("focus", checkDayRoll);
+  window.addEventListener("pageshow", checkDayRoll);   // 되살아날 때 (iOS 홈 화면 앱)
+
   document.addEventListener("visibilitychange", function(){
-    if(!document.hidden && T.running){
+    if(document.hidden) return;
+    checkDayRoll();
+    if(T.running){
       if(Math.round((T.endsAt-Date.now())/1000)<=0) finish(); else paintTimer();
     }
   });
